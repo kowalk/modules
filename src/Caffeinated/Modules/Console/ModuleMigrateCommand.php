@@ -65,7 +65,6 @@ class ModuleMigrateCommand extends Command
 			return $this->migrateModule($module);
 		} else {
             return $this->migrateAllModules();
-
 		}
 	}
 
