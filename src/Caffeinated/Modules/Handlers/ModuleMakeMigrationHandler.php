@@ -60,18 +60,21 @@ class ModuleMakeMigrationHandler
 	 *
 	 * @param  \Caffeinated\Modules\Console\ModuleMakeMigrationCommand $console
 	 * @param  string                                                  $slug
-	 * @return string
+     * @param  string                                                  $table
+     * @param  string                                                  $migrationName
+     * @return string
+     *
 	 */
-	public function fire(Command $console, $slug, $table)
+	public function fire(Command $console, $slug, $table, $migrationName = null)
 	{
 		$this->console       = $console;
 		$this->moduleName    = Str::studly($slug);
 		$this->table         = str_plural(strtolower($table));
-		$this->migrationName = 'create_'.snake_case($this->table).'_table';
+		$this->migrationName = ($migrationName === null) ? 'create_'.snake_case($this->table).'_table' : snake_case($migrationName);
 		$this->className     = studly_case($this->migrationName);
 
 		if ($this->module->exists($this->moduleName)) {
-			$this->makeFile();
+			$this->makeFile($migrationName !== null);
 
 			$this->console->info("Created Module Migration: [$this->moduleName] ".$this->getFilename());
 
@@ -86,9 +89,9 @@ class ModuleMakeMigrationHandler
 	 *
 	 * @return int
 	 */
-	protected function makeFile()
+	protected function makeFile($useEditStub = false)
 	{
-		return $this->finder->put($this->getDestinationFile(), $this->getStubContent());
+		return $this->finder->put($this->getDestinationFile(), $this->getStubContent($useEditStub));
 	}
 
 	/**
@@ -128,9 +131,12 @@ class ModuleMakeMigrationHandler
 	 *
 	 * @return string
 	 */
-	protected function getStubContent()
+	protected function getStubContent($useEditStub = false)
 	{
-		return $this->formatContent($this->finder->get(__DIR__.'/../Console/stubs/migration.stub'));
+        $stubName = ($useEditStub) ? 'migrationedit.stub' : 'migration.stub';
+        $stubPath = __DIR__.'/../Console/stubs/'.$stubName;
+
+		return $this->formatContent($this->finder->get($stubPath));
 	}
 
 	/**

@@ -73,18 +73,26 @@ class Modules implements Countable
 	}
 
 	/**
-	 * Get all modules.
+	 * Get all modules (sort by order from module.json if defined else order by module slug).
 	 *
 	 * @return Collection
 	 */
 	public function all()
 	{
-		$modules    = array();
+		$modules    = [];
 		$allModules = $this->getAllBasenames();
-
 		foreach ($allModules as $module) {
-			$modules[] = $this->getJsonContents($module);
-		}
+			$moduleData = $this->getJsonContents($module);
+            $useOrder = (!empty($moduleData['order']) && !isset($modules[ $moduleData['order'] ]));
+
+            if($useOrder){
+                $modules[ $moduleData['order'] ] = $moduleData;
+            }else{
+                $modules[ $moduleData['slug'] ] = $moduleData;
+            }
+        }
+
+        ksort($modules);
 
 		return new Collection($modules);
 	}

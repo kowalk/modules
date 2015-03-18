@@ -41,7 +41,7 @@ class ModuleMakeMigrationCommand extends Command
 	 */
 	public function fire()
 	{
-		return $this->handler->fire($this, $this->argument('module'), $this->argument('table'));
+		return $this->handler->fire($this, $this->argument('module'), $this->argument('table'), $this->argument('name'));
 	}
 
 	/**
@@ -53,7 +53,8 @@ class ModuleMakeMigrationCommand extends Command
 	{
 		return [
 			['module', InputArgument::REQUIRED, 'Module slug.'],
-			['table', InputArgument::REQUIRED, 'Table name.']
+			['table', InputArgument::REQUIRED, 'Table name.'],
+            ['name', InputArgument::OPTIONAL, 'Migration slug']
 		];
 	}
 }
