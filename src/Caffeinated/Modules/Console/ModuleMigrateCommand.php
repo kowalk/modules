@@ -62,13 +62,43 @@ class ModuleMigrateCommand extends Command
 		$module = $this->argument('module');
 
 		if (isset($module)) {
-			return $this->migrate($module);
+			return $this->migrateModule($module);
 		} else {
-			foreach ($this->module->all() as $module) {
-				$this->migrate($module['slug']);
-			}
+            return $this->migrateAllModules();
+
 		}
 	}
+
+    /**
+     *  Run migrations for all moudules sorted by migration name
+     *  @return void
+     */
+    protected function migrateAllModules(){
+        $allMigrationFiles = [];
+        $ran = $this->migrator->getRepository()->getRan();
+
+        foreach ($this->module->all() as $module) {
+            $path = $this->getMigrationPath($module['slug']);
+            $moduleMigrationFiles =  $this->migrator->getMigrationFiles($path);
+            $moduleMigrationFiles = array_diff($moduleMigrationFiles, $ran);
+            $this->migrator->requireFiles($path, $moduleMigrationFiles);
+
+            $allMigrationFiles = array_merge($allMigrationFiles, $moduleMigrationFiles);
+        }
+
+        sort($allMigrationFiles);
+
+        $pretend = $this->option('pretend');
+        $this->migrator->runMigrationList($allMigrationFiles, $pretend);
+
+        foreach ($this->migrator->getNotes() as $note)
+        {
+            if (! $this->option('quiet')) {
+                $this->output->writeln($note);
+            }
+        }
+    }
+
 
 	/**
 	 * Run migrations for the specified module.
@@ -76,7 +106,7 @@ class ModuleMigrateCommand extends Command
 	 * @param  string $slug
 	 * @return mixed
 	 */
-	protected function migrate($slug)
+	protected function migrateModule($slug)
 	{
 		$moduleName = Str::studly($slug);
 
