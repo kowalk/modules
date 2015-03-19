@@ -69,7 +69,7 @@ class ModuleMigrateCommand extends Command
 	}
 
     /**
-     *  Run migrations for all moudules sorted by migration name
+     *  Run migrations for all modules sorted by migration name
      *  @return void
      */
     protected function migrateAllModules(){
